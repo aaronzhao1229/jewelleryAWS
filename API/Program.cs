@@ -1,4 +1,5 @@
 using API.Data;
+using API.Middleware;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -18,6 +19,12 @@ builder.Services.AddCors(); // add CORS service. We also need to add some middle
 var app = builder.Build();
 
 // Configure the HTTP request pipeline. Orders are important.
+
+// we are going to create our own exception handlding middleware and return it to the client in a format that's easier to work with on the client as well.
+
+//exception middleware needs to be on the top of the middleware tree just in case any of our middleware throws an exception
+app.UseMiddleware<ExceptionMiddleware>();
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
