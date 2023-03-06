@@ -1,5 +1,6 @@
 import axios, { AxiosError, AxiosResponse } from "axios"
 import { toast } from "react-toastify"
+import { PaginatedResponse } from "../models/pagination"
 import { router } from "../router/Routes"
 
 const sleep = () => new Promise(resolve => setTimeout(resolve, 500))
@@ -11,6 +12,11 @@ const responseBody = (response: AxiosResponse) => response.data
 
 axios.interceptors.response.use(async response => {
     await sleep();
+    const pagination = response.headers['pagination'] // need to be lower case even if there are upper cases in the header
+    if (pagination) {
+        response.data = new PaginatedResponse(response.data, JSON.parse(pagination))
+        return response
+    }
     return response
 }, (error: AxiosError) => {
     const {data, status} = error.response as AxiosResponse; // add as AxiosResponse to remove the error from the interceptor
@@ -41,7 +47,8 @@ axios.interceptors.response.use(async response => {
 })
 
 const requests = {
-    get: (url: string) => axios.get(url).then(responseBody),
+  // URLSearchParams is not needed to be imported. It allows us to pass the params as query strings to our request. In our Axios get requests, it can take some configuration, and one of the configuration options is to send up a params object and it can be of type URL search parameters
+    get: (url: string, params?: URLSearchParams) => axios.get(url, {params}).then(responseBody),
     post: (url: string, body: {}) => axios.post(url, body).then(responseBody),
     put: (url: string, body: {}) => axios.put(url, body).then(responseBody),
     delete: (url: string) => axios.delete(url).then(responseBody),
@@ -49,8 +56,9 @@ const requests = {
 }
 
 const Catalog = {
-    list: () => requests.get('products'),
-    details: (id: number) => requests.get(`products/${id}`)
+    list: (params: URLSearchParams) => requests.get('products', params),
+    details: (id: number) => requests.get(`products/${id}`),
+    fetchFilters: () => requests.get('products/filters')
 }
 
 const TestErrors = {
