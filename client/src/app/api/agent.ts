@@ -2,6 +2,7 @@ import axios, { AxiosError, AxiosResponse } from "axios"
 import { toast } from "react-toastify"
 import { PaginatedResponse } from "../models/pagination"
 import { router } from "../router/Routes"
+import { store } from "../store/configureStore"
 
 const sleep = () => new Promise(resolve => setTimeout(resolve, 500))
 
@@ -9,6 +10,12 @@ axios.defaults.baseURL = 'http://localhost:5000/api/'
 axios.defaults.withCredentials = true // with both sides of this element in place, then our browser will receive the cookie and it will set the cookie inside our application storage as well
 
 const responseBody = (response: AxiosResponse) => response.data
+
+axios.interceptors.request.use(config => {
+    const token = store.getState().account.user?.token // in order to use the user object from getState(), we will need to make sure that if we have a token in local storage, we actually set this inside our state before we're going to be able to use this and set the token accordingly.
+    if (token) config.headers.Authorization = `Bearer ${token}`
+    return config
+})
 
 axios.interceptors.response.use(async response => {
     await sleep();
@@ -75,10 +82,17 @@ const Basket = {
     removeItem: (productId: number, quantity = 1) => requests.delete(`basket?productId=${productId}&quantity=${quantity}`),
 }
 
+const Account = {
+    login: (values: any) => requests.post('account/login', values),
+    register: (values: any) => requests.post('account/register', values),
+    currentUser: () => requests.get('account/currentUser'),
+}
+
 const agent = {
     Catalog,
     TestErrors,
-    Basket
+    Basket,
+    Account
 }
 
 export default agent

@@ -21,7 +21,7 @@ const sortOptions = [
 export default function Catalog() {
 
   const products = useAppSelector(productSelectors.selectAll)
-  const {productsLoaded, status, filtersLoaded, categories, productParams, metaData} = useAppSelector(state => state.catalog)
+  const {productsLoaded, filtersLoaded, categories, productParams, metaData} = useAppSelector(state => state.catalog)
   const dispatch = useAppDispatch()
 
   // use two useEffect to avoid fetch products again when filtersLoaded changes

@@ -1,6 +1,7 @@
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice, isAnyOf } from "@reduxjs/toolkit";
 import agent from "../../app/api/agent";
 import { Basket } from "../../app/models/basket";
+import { getCookie } from "../../app/util/util";
 
 interface BasketState {
     basket: Basket | null
@@ -14,6 +15,23 @@ const initialState: BasketState = {
 
 // the first type in createAsyncThunk function represents what are we returning from this method which is Basket in this case. The next parameter is the argument type, which is productId and quantity
 // createAsyncThunk methods create actions on our behalf that we can use to do something inside our store and what we'll need to do is we want to set this to pending as soon as we start to get our baskets item; and then we want to set it back to idle once that is fullfilled or we get an error
+
+export const fetchBasketAsync = createAsyncThunk<Basket> (
+    'basket/fetchBasketAsync',
+    async (_, thunkAPI) => {
+        try {
+            return agent.Basket.get()
+        } catch (error: any) {
+          thunkAPI.rejectWithValue({error: error.data})
+        }
+    },
+    {
+        condition: () => {
+           if (!getCookie('buyerId')) return false
+        }
+    }
+)
+
 export const addBasketItemAsync = createAsyncThunk<Basket, {productId: number, quantity?: number}>(
     'basket/addBasketItemAsync',  // async creator
     async ({productId, quantity = 1}, thunkAPI) => {
@@ -44,19 +62,15 @@ export const basketSlice = createSlice({
         setBasket: (state, action) => {
             state.basket = action.payload
         },
+        clearBasket: (state) => {
+            state.basket = null
+        }
     },
     extraReducers: (builder => {
         builder.addCase(addBasketItemAsync.pending, (state, action) => {
             state.status = 'pendingAddItem' + action.meta.arg.productId // data structure to get the productId from the action. This is for loading indicator only for the item
         });
-        builder.addCase(addBasketItemAsync.fulfilled, (state, action) => {
-            state.basket = action.payload
-            state.status = 'idle'
-        })
-        builder.addCase(addBasketItemAsync.rejected, (state, action) => {
-            state.status = 'idle'
-            console.log(action.payload)
-        })
+      
         builder.addCase(removeBasketItemAsync.pending, (state, action) => {
             state.status = 'pendingRemoveItem' + action.meta.arg.productId + action.meta.arg.name
         })
@@ -78,9 +92,17 @@ export const basketSlice = createSlice({
             state.status = 'idle'
             console.log(action.payload)
         })
+        builder.addMatcher(isAnyOf(addBasketItemAsync.fulfilled, fetchBasketAsync.fulfilled), (state, action) => {
+          state.basket = action.payload
+          state.status = 'idle'
+        })
+        builder.addMatcher(isAnyOf(addBasketItemAsync.rejected, fetchBasketAsync.rejected), (state, action) => {
+            state.status = 'idle'
+            console.log(action.payload)
+        })
 
 
     })
 })
 
-export const {setBasket} = basketSlice.actions
+export const {setBasket, clearBasket} = basketSlice.actions

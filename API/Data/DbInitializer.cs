@@ -1,11 +1,32 @@
 using API.Entities;
+using Microsoft.AspNetCore.Identity;
 
 namespace API.Data
 {
   public static class DbInitializer // static means we can use the class without actually initializing a new instance of this particular class
     {
-        public static void Initialize(StoreContext context)
+        public static async Task Initialize(StoreContext context, UserManager<User> userManager)
         {
+            if (!userManager.Users.Any()) // access the database and check if there are any users
+            { 
+                var user = new User{
+                    UserName = "bob",
+                    Email = "bob@test.com"
+                };
+
+                await userManager.CreateAsync(user, "Pa$$w0rd"); // we don't need to save changes using the userManager. When we use this particular method is going to create the user and save the changes into the database at the same time.
+                await userManager.AddToRoleAsync(user, "Member");
+
+                var admin = new User
+                {
+                    UserName = "admin",
+                    Email = "admin@test.com"
+
+                };
+                await userManager.CreateAsync(admin, "Pa$$w0rd");
+                await userManager.AddToRolesAsync(admin, new[] {"Member", "Admin"});
+
+            }
             // check to see if there's any products in our database currently, because if there is, we don't want to reseed the same products in over and over again
             if (context.Products.Any()) return;
 

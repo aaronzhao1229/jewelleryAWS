@@ -1,35 +1,35 @@
 
 import { createTheme, CssBaseline, ThemeProvider } from "@mui/material";
 import { Container } from "@mui/system";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Outlet } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css'; // to supply the css that react-toastify for users
-import { setBasket } from "../../features/basket/basketSlice";
-import agent from "../api/agent";
+import { fetchCurrentUser } from "../../features/account/accountSlice";
+import { fetchBasketAsync } from "../../features/basket/basketSlice";
 
 import { useAppDispatch } from "../store/configureStore";
-import { getCookie } from "../util/util";
 import Header from "./Header";
 import LoadingComponent from "./LoadingComponent";
 
 
 function App() {
     const dispatch = useAppDispatch()
-
     const [loading, setLoading] = useState(true)
 
-    useEffect(() => {
-        const buyerId = getCookie('buyerId')
-        if (buyerId) {
-            agent.Basket.get()
-            .then(basket => dispatch(setBasket(basket)))
-            .catch(error => console.log(error))
-            .finally(() => setLoading(false))
-        } else {
-            setLoading(false)
+    const initApp = useCallback(async () => {
+        try {
+            await dispatch(fetchCurrentUser())
+            await dispatch(fetchBasketAsync())
+        } catch (error) {
+            console.log(error)
         }
     }, [dispatch])
+
+    // When we use fetchCurrentUser or fetchBasketAsync, it could cause initApp change and make an infinite loop. So we need to wrap the initApp() function with useCallback(). What it does is it will memorize the initApp function and ensure it does not change on any re-render.
+    useEffect(() => {
+        initApp().then(() => setLoading(false))
+    }, [initApp])
 
     const [darkMode, setDarkMode] = useState(false)
     const paletteType = darkMode ? 'dark' : 'light'
