@@ -58,7 +58,7 @@ builder.Services.AddIdentityCore<User>(opt =>
      opt.User.RequireUniqueEmail = true;
 }
 ) // We could have used IdentityUser here, but later on we will need more properties than those IdentityUser gives us and we have derive from IdentityUser class in order to add our own properties to the User class. Therefore, we use User here.
-    .AddRoles<IdentityRole>()
+    .AddRoles<Role>()
     .AddEntityFrameworkStores<StoreContext>(); // this will give us six tables (a table for uses, a table for roles and other tables) in our database of identity information stores. 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(opt => 
