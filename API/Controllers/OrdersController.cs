@@ -78,7 +78,8 @@ namespace API.Controllers
                 BuyerId = User.Identity.Name,
                 ShippingAddress = orderDto.ShippingAddress,
                 Subtotal = subtotal,
-                DeliveryFee = deliveryFee
+                DeliveryFee = deliveryFee,
+                PaymentIntentId = basket.PaymentIntentId // we don't need it right away, but when it comes to updating our order with a successful payment, then we need something that we can use to get hold of the order and update it accordingly. Because when a client submits the payment, nothing's going to our API and our API when we complete the function to submit the order is not going to know if the payment was successful before it actually creates the order. It will be successful because we're not going to let the client submit the form or submit the order and unless it is successful. 
             };
 
             _context.Orders.Add(order);

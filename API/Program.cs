@@ -83,7 +83,7 @@ builder.Services.AddAuthorization();
 // Therefore, the most common way of using these services would be to scope it to the HTTP request.
 builder.Services.AddScoped<TokenService>();
 // Identity
-
+builder.Services.AddScoped<PaymentService>();
 
 var app = builder.Build();
 

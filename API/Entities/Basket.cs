@@ -11,6 +11,9 @@ namespace API.Entities
         public string BuyerId { get; set; }
         public List<BasketItem> Items { get; set; } = new List<BasketItem>(); // create an intial list for the basket
 
+        public string PaymentIntentId {get; set;} // use this for the order as well
+        public string ClientSecret { get; set; } // this will be sent back to client for payment
+
         public void AddItem(Product product, int quantity)
         {   // check if the product already in basket. If not, add to basket
             if (Items.All(item => item.ProductId != product.Id)) 
