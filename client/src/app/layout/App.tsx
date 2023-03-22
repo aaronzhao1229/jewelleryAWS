@@ -2,11 +2,12 @@
 import { createTheme, CssBaseline, ThemeProvider } from "@mui/material";
 import { Container } from "@mui/system";
 import { useCallback, useEffect, useState } from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css'; // to supply the css that react-toastify for users
 import { fetchCurrentUser } from "../../features/account/accountSlice";
 import { fetchBasketAsync } from "../../features/basket/basketSlice";
+import HomePage from "../../features/Home/HomePage";
 
 import { useAppDispatch } from "../store/configureStore";
 import Header from "./Header";
@@ -14,6 +15,7 @@ import LoadingComponent from "./LoadingComponent";
 
 
 function App() {
+    const location = useLocation() // we can get the path of where we're currently browsing to 
     const dispatch = useAppDispatch()
     const [loading, setLoading] = useState(true)
 
@@ -46,7 +48,6 @@ function App() {
       setDarkMode(!darkMode)
     }
 
-    if (loading) return <LoadingComponent message='Initialising app...' />
 
     return (
       <ThemeProvider theme={theme}>
@@ -54,9 +55,11 @@ function App() {
           <ToastContainer position="bottom-right" hideProgressBar theme="colored" />
           <CssBaseline />
           <Header darkMode={darkMode} handleThemeChange={handleThemeChange} />
-          <Container>
+          {loading ? <LoadingComponent message='Initialising app...' /> : location.pathname === '/' ? <HomePage /> : 
+          <Container sx={{mt: 4}}>
               <Outlet />
-          </Container>
+          </Container>}
+          
           
       </ThemeProvider>
   );

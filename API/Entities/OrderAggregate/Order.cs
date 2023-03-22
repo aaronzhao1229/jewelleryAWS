@@ -12,7 +12,7 @@ namespace API.Entities.OrderAggregate
         public string BuyerId { get; set; }
         [Required] // because this is an owned property, we need to make this owned.
         public ShippingAddress ShippingAddress { get; set; }
-        public DateTime OrderDate { get; set; } = DateTime.Now;
+        public DateTime OrderDate { get; set; } = DateTime.UtcNow;
         public List<OrderItem> OrderItems { get; set; }
         public long Subtotal { get; set; }
         public long DeliveryFee { get; set; }
