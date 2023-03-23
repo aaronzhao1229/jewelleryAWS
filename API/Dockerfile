@@ -1,7 +1,8 @@
 # build-env is the build stage. This will stage an area for us inside docker as we go about building our image. We build inside layers. So as make code(or co) changes, we create a new image. It's not going to start from scratch and re-download the SDK. It's going to start from a particular point and only create a new image
 FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build-env
 # workdir /app specifies a workig directory. Inside our docker container, a directory is called /app. This is not our own file system. This is dockers file system inside the container. Any command we run, such as dotnet run will be happening inside this directory.
-WORKDIR /app 
+WORKDIR /app
+EXPOSE 8080
 
 # copy csproj and restore as distinct layers
 # copy the file and put it in ./ which means it is in the app folder

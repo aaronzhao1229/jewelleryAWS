@@ -45,11 +45,41 @@ builder.Services.AddSwaggerGen(c =>
 );
 
 
-builder.Services.AddDbContext<StoreContext>(opt => 
+// builder.Services.AddDbContext<StoreContext>(opt => 
+// {
+//     opt.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
+// });
+// builder.Services.AddCors(); // add CORS service. We also need to add some middleware because we're going to modify the request on its way out as we need to add that CORS header that goes along with goes along with our request.
+
+// configure for flyio
+// what does this mean is we cannot now start our image via docker because we've only got two connection strings (DefaultConnection and production connection string which is using the DTABASE_URL). We have no connection string for the host.docker.internal version of Postgres, so please don't try and run your application via docker, your image locally as that will not work. Using this configuration. You would need to revert back to what you had before in order to do that.
+string connString;
+if (builder.Environment.IsDevelopment())
+    connString = builder.Configuration.GetConnectionString("DefaultConnection");
+else
 {
-    opt.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
+    // Use connection string provided at runtime by FlyIO.
+    var connUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
+
+    // Parse connection URL to connection string for Npgsql
+    connUrl = connUrl.Replace("postgres://", string.Empty);
+    var pgUserPass = connUrl.Split("@")[0];
+    var pgHostPortDb = connUrl.Split("@")[1];
+    var pgHostPort = pgHostPortDb.Split("/")[0];
+    var pgDb = pgHostPortDb.Split("/")[1];
+    var pgUser = pgUserPass.Split(":")[0];
+    var pgPass = pgUserPass.Split(":")[1];
+    var pgHost = pgHostPort.Split(":")[0];
+    var pgPort = pgHostPort.Split(":")[1];
+    var updatedHost = pgHost.Replace("flycast", "internal");
+
+    connString = $"Server={updatedHost};Port={pgPort};User Id={pgUser};Password={pgPass};Database={pgDb};";
+}
+builder.Services.AddDbContext<StoreContext>(opt =>
+{
+    opt.UseNpgsql(connString);
 });
-builder.Services.AddCors(); // add CORS service. We also need to add some middleware because we're going to modify the request on its way out as we need to add that CORS header that goes along with goes along with our request.
+
 
 // Identity
 
