@@ -47,7 +47,7 @@ builder.Services.AddSwaggerGen(c =>
 
 builder.Services.AddDbContext<StoreContext>(opt => 
 {
-    opt.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"));
+    opt.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
 builder.Services.AddCors(); // add CORS service. We also need to add some middleware because we're going to modify the request on its way out as we need to add that CORS header that goes along with goes along with our request.
 
@@ -103,6 +103,10 @@ if (app.Environment.IsDevelopment())
        // keep the toke persisted if we refresh our browser
     });
 }
+// for production mode
+app.UseDefaultFiles(); // this means that it's going to look for inside its default directory, the wwwroot. It's going to look for something called index.html. If it finds it, then that's what it's going to serve from this location.
+
+app.UseStaticFiles(); // we need to tell our app that we want it to use static files so it can serve the content
 
 app.UseCors(opt => 
 {
@@ -113,7 +117,7 @@ app.UseAuthentication(); // this needs to be before UseAuthorization()
 app.UseAuthorization();
 
 app.MapControllers();
-
+app.MapFallbackToController("Index", "Fallback"); // this is a fallback controller that we need to create to tell our API to do something when it encounters a route that it doesn't know about. It already knows about the endpoints for our controllers, but we need to provide it with something that tells it what to do with routes it does not know about. Index is the action, Fallback is the name of the controller we will create.
 
 // this part is to create a database and seed the data when we run the code
 var scope = app.Services.CreateScope();
