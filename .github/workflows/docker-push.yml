@@ -1,4 +1,4 @@
-name: ci
+name: docker-push
 
 on:
   # this allows us to run the workflow manually from withinside GitHub actions rather than automatically  on push. We'll come back later to do this. 
