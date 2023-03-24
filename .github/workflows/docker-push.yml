@@ -1,12 +1,14 @@
 name: docker-push
 
 on:
-  # this allows us to run the workflow manually from withinside GitHub actions rather than automatically  on push. We'll come back later to do this. 
+  # this allows us to run the workflow manually from withinside GitHub actions rather than automatically  on push.
   workflow_dispatch: 
-  # push:
-  #   branches:
-  #     - 'main'
-
+  #this allows us to run the workflow automatically when we do push our code up to github.
+  push:
+    branches:
+      - 'main'
+env:
+  FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 jobs:
 # we've got a job called Docker and we can have multiple jobs inside here that will run in parallel if we have more than one. 
   docker:
@@ -34,3 +36,12 @@ jobs:
           push: true
           # docker username
           tags: aaronzhao1229/jewellery:latest
+  deploy:
+    needs: docker # We do want this run after the docker action creates a new image. If we don't use this, the docker and deploy will run on paralel.
+    name: Deploy app
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3 #checkout repository
+      - uses: superfly/flyctl-actions/setup-flyctl@master #use an action provided by fly
+      - run: flyctl deploy --remote-only
+        
