@@ -1,4 +1,0 @@
-# specify the folders we don't need to copy. We don't need these two as they can be recreated when we do a dotnet restore inside our docker file.
-
-**/bin
-**/obj
