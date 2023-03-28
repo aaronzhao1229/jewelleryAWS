@@ -60,7 +60,9 @@ export const accountSlice = createSlice({
             router.navigate('/')
         }, 
         setUser: (state, action) => {
-            state.user = action.payload
+            let claims = JSON.parse(atob(action.payload.token.split('.')[1])) // get the payload part of the token
+            let roles = claims['http://schemas.microsoft.com/ws/2008/06/identity/claims/role']
+            state.user = {...action.payload, roles: typeof(roles) === 'string' ? [roles] : roles}
         }
     },
     extraReducers: (builder => {
@@ -72,7 +74,9 @@ export const accountSlice = createSlice({
         })
       // signInUser and fetchCurrentUser both return the user and we want to set  user  inside here. If we get an error, we will use the same case for that as well. We don't have to worry about the pending status because our React hook form, as we we've already seen, is taking care of the loading indicators there. So All we need is two cases and use addMatcher so that we use the same case for both methods. 
         builder.addMatcher(isAnyOf(signInUser.fulfilled, fetchCurrentUser.fulfilled), (state, action) => {
-            state.user = action.payload
+            let claims = JSON.parse(atob(action.payload.token.split('.')[1])) // get the payload part of the token
+            let roles = claims['http://schemas.microsoft.com/ws/2008/06/identity/claims/role']
+            state.user = {...action.payload, roles: typeof(roles) === 'string' ? [roles] : roles}
         });
         builder.addMatcher(isAnyOf(signInUser.rejected), (state, action) => {
           throw action.payload

@@ -97,7 +97,16 @@ export const catalogSlice = createSlice({
         },
         resetProductParams: (state) => {
             state.productParams = initParams()
+        },
+        setProduct: (state, action) => {
+            productsAdapter.upsertOne(state, action.payload)
+            state.productsLoaded = false; // this will trigger the fetchProducts in the useProducts hook and make the upsertOne pointless
+        },
+        removeProduct: (state, action) => {
+            productsAdapter.removeOne(state, action.payload)
+            state.productsLoaded = false; // this will trigger the fetchProducts in the useProducts hook and make the removeOne pointless
         }
+        
     },
     extraReducers: (builder => {
         builder.addCase(fetchProductsAsync.pending, (state) => {
@@ -140,4 +149,4 @@ export const catalogSlice = createSlice({
 
 export const productSelectors = productsAdapter.getSelectors((state: RootState) => state.catalog)
 
-export const {setProductParams, resetProductParams, setMetaData, setPageNumber} = catalogSlice.actions
+export const {setProductParams, resetProductParams, setMetaData, setPageNumber, setProduct, removeProduct} = catalogSlice.actions
